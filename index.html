@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r108/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.10.4/gsap.min.js"></script>
+    <link rel="stylesheet" href="styles.css" />
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+      }
+    </style>
+  </head>
+  <body>
+    <script>
+      var scene = new THREE.Scene();
+
+      document.addEventListener("mousemove", onMouseMove, false);
+      var camera = new THREE.PerspectiveCamera(
+        75,
+        window.innerWidth / window.innerHeight,
+        0.1,
+        1000
+      );
+      var mouseX;
+      var mouseY;
+
+      var renderer = new THREE.WebGLRenderer({ alpha: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      document.body.appendChild(renderer.domElement);
+
+      window.addEventListener("resize", function () {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      });
+
+      var distance = Math.min(200, window.innerWidth / 4);
+      var geometry = new THREE.Geometry();
+
+      for (var i = 0; i < 20000; i++) {
+        var vertex = new THREE.Vector3();
+
+        var phi = THREE.Math.randFloatSpread(360);
+
+        function biasedRandFloat(start, end, bias, influence) {
+          var rnd = Math.random() * (end - start) + start;
+          var mix = Math.pow(Math.random(), bias) * influence;
+          return (
+            rnd * (1 - mix) + (rnd < (start + end) / 2 ? start : end) * mix
+          );
+        }
+
+        var theta = biasedRandFloat(0, 3.2, 0.7, 0.7);
+
+        var ratio = Math.abs(Math.sin(theta));
+        var r = distance * ratio;
+
+        vertex.x = r * Math.cos(phi);
+        vertex.y = r * Math.sin(phi);
+        vertex.z = distance * Math.cos(theta);
+
+        vertex.x += THREE.Math.randFloatSpread(15);
+        vertex.y += THREE.Math.randFloatSpread(15);
+        vertex.z += THREE.Math.randFloatSpread(15);
+
+        geometry.vertices.push(vertex);
+      }
+
+      var particles = new THREE.Points(
+        geometry,
+        new THREE.PointsMaterial({ color: 0x5d1c7a, size: 2.5 })
+      );
+      particles.boundingSphere = 50;
+
+      var renderingParent = new THREE.Group();
+      renderingParent.add(particles);
+
+      var resizeContainer = new THREE.Group();
+      resizeContainer.add(renderingParent);
+      scene.add(resizeContainer);
+
+      camera.position.z = 400;
+
+      renderingParent.rotation.x = Math.PI / 2;
+
+      var animate = function () {
+        requestAnimationFrame(animate);
+        renderingParent.rotation.z -= 0.001;
+        renderer.render(scene, camera);
+      };
+
+      var myTween;
+      function onMouseMove(event) {
+        if (myTween) myTween.kill();
+
+        mouseX = (event.clientX / window.innerWidth) * 2 - 1;
+        mouseY = -(event.clientY / window.innerHeight) * 2 + 1;
+
+        myTween = gsap.to(particles.rotation, {
+          duration: 0.1,
+          x: mouseY * -0.2,
+          // y: mouseX * 0.15,
+        });
+      }
+
+      animate();
+    </script>
+  </body>
+</html>
