@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <title>Particle Animation</title>
   </head>
   <body>
     <div style="width: 50%">
@@ -19,12 +19,17 @@
       window.onload = function () {
         var scene = new THREE.Scene();
 
+        document
+          .getElementById("particle-globe-container")
+          .addEventListener("mouseover", onHover, false);
+        document
+          .getElementById("particle-globe-container")
+          .addEventListener("mouseout", onMouseOut, false);
+
         document.addEventListener("mousemove", onMouseMove, false);
         document.addEventListener("touchmove", onTouchMove, false);
 
         var camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
-        var mouseX;
-        var mouseY;
 
         var renderer = new THREE.WebGLRenderer({ alpha: true });
         renderer.setSize(1000, 1000);
@@ -47,21 +52,13 @@
         var distance = Math.min(200, 1000 / 4);
         var geometry = new THREE.Geometry();
 
+        var originalVertices = [];
+
         for (var i = 0; i < 20000; i++) {
           var vertex = new THREE.Vector3();
 
           var phi = THREE.Math.randFloatSpread(360);
-
-          function biasedRandFloat(start, end, bias, influence) {
-            var rnd = Math.random() * (end - start) + start;
-            var mix = Math.pow(Math.random(), bias) * influence;
-            return (
-              rnd * (1 - mix) + (rnd < (start + end) / 2 ? start : end) * mix
-            );
-          }
-
           var theta = biasedRandFloat(0, 3.2, 0.7, 0.7);
-
           var ratio = Math.abs(Math.sin(theta));
           var r = distance * ratio;
 
@@ -73,13 +70,23 @@
           vertex.y += THREE.Math.randFloatSpread(15);
           vertex.z += THREE.Math.randFloatSpread(15);
 
+          originalVertices.push(vertex.clone());
+
           geometry.vertices.push(vertex);
+        }
+
+        function biasedRandFloat(start, end, bias, influence) {
+          var rnd = Math.random() * (end - start) + start;
+          var mix = Math.pow(Math.random(), bias) * influence;
+          return (
+            rnd * (1 - mix) + (rnd < (start + end) / 2 ? start : end) * mix
+          );
         }
 
         var particles = new THREE.Points(
           geometry,
           new THREE.PointsMaterial({
-            color: 0x5d1c7a,
+            color: 0x3e2469,
             size: 2.5,
           })
         );
@@ -102,6 +109,48 @@
           renderer.render(scene, camera);
         };
 
+        var hoverTween;
+        function onHover() {
+          if (hoverTween) hoverTween.kill();
+
+          geometry.vertices.forEach(function (vertex, i) {
+            var original = originalVertices[i];
+            var offset = {
+              x: THREE.Math.randFloatSpread(30),
+              y: THREE.Math.randFloatSpread(30),
+              z: THREE.Math.randFloatSpread(30),
+            };
+            gsap.to(vertex, {
+              x: original.x + offset.x,
+              y: original.y + offset.y,
+              z: original.z + offset.z,
+              duration: 0.5,
+              ease: "power1.inOut",
+              onUpdate: function () {
+                geometry.verticesNeedUpdate = true;
+              },
+            });
+          });
+        }
+
+        function onMouseOut() {
+          if (hoverTween) hoverTween.kill();
+
+          geometry.vertices.forEach(function (vertex, i) {
+            var original = originalVertices[i];
+            gsap.to(vertex, {
+              x: original.x,
+              y: original.y,
+              z: original.z,
+              duration: 0.5,
+              ease: "power1.inOut",
+              onUpdate: function () {
+                geometry.verticesNeedUpdate = true;
+              },
+            });
+          });
+        }
+
         var myTween;
         function onMouseMove(event) {
           if (myTween) myTween.kill();
@@ -112,7 +161,7 @@
           myTween = gsap.to(particles.rotation, {
             duration: 0.1,
             x: mouseY * -0.2,
-            y: mouseX * 0.2,
+            // y: mouseX * 0.2,
           });
         }
 
@@ -129,7 +178,7 @@
             myTween = gsap.to(particles.rotation, {
               duration: 0.1,
               x: mouseY * -0.2,
-              y: mouseX * 0.2,
+              // y: mouseX * 0.2,
             });
           }
         }
