@@ -83,11 +83,25 @@
           );
         }
 
+        // Create a circular texture
+        var canvas = document.createElement("canvas");
+        canvas.width = 64;
+        canvas.height = 64;
+        var ctx = canvas.getContext("2d");
+        ctx.beginPath();
+        ctx.arc(32, 32, 30, 0, 2 * Math.PI);
+        ctx.fillStyle = "#ffffff";
+        ctx.fill();
+
+        var texture = new THREE.CanvasTexture(canvas);
+
         var particles = new THREE.Points(
           geometry,
           new THREE.PointsMaterial({
             color: 0x3e2469,
             size: 2.5,
+            map: texture,
+            transparent: true,
           })
         );
         particles.boundingSphere = 50;
@@ -116,9 +130,9 @@
           geometry.vertices.forEach(function (vertex, i) {
             var original = originalVertices[i];
             var offset = {
-              x: THREE.Math.randFloatSpread(30),
-              y: THREE.Math.randFloatSpread(30),
-              z: THREE.Math.randFloatSpread(30),
+              x: THREE.Math.randFloatSpread(20),
+              y: THREE.Math.randFloatSpread(20),
+              z: THREE.Math.randFloatSpread(20),
             };
             gsap.to(vertex, {
               x: original.x + offset.x,
