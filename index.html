@@ -54,11 +54,11 @@
 
         var originalVertices = [];
 
-        for (var i = 0; i < 10000; i++) {
+        for (var i = 0; i < 8000; i++) {
           var vertex = new THREE.Vector3();
 
           var phi = THREE.Math.randFloatSpread(360);
-          var theta = biasedRandFloat(0, 3.1, 0.7, 0.4);
+          var theta = biasedRandFloat(0, 3.1, 1.1, 0.2);
           var ratio = Math.abs(Math.sin(theta));
           var r = distance * ratio;
 
@@ -66,9 +66,9 @@
           vertex.y = r * Math.sin(phi);
           vertex.z = distance * Math.cos(theta);
 
-          vertex.x += THREE.Math.randFloatSpread(15);
-          vertex.y += THREE.Math.randFloatSpread(15);
-          vertex.z += THREE.Math.randFloatSpread(15);
+          vertex.x += THREE.Math.randFloatSpread(20);
+          vertex.y += THREE.Math.randFloatSpread(20);
+          vertex.z += THREE.Math.randFloatSpread(20);
 
           originalVertices.push(vertex.clone());
 
